@@ -1,0 +1,6 @@
+export PYTHONPATH=/usr/local/projects/redisToGraphite:/usr/lib/python36.zip:/usr/lib/pytn3.6:/usr/lib/python3.6/lib-dynload:/usr/local/lib/python3.6/dist-packages:/usr/lib/python3/dist-packages
+
+
+/bin/date >> /tmp/toGraphite.err
+/usr/bin/python3.6 /usr/local/projects/redisToGraphite/toGraphite.py 1>/tmp/toGraphite.log 2>>/tmp/toGraphite.err
+
