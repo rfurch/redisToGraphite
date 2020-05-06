@@ -51,14 +51,17 @@ def redisToGraphite():
 
 			# detect elements not interrogated more than 180 seconds ago...  
 			if ( (now - int(lastSNMP.decode('utf-8'))) > 180 ):
+				#print ("Not Active:", id, descr, (now - int(lastSNMP.decode('utf-8'))), file=sys.stderr )
 				if (_verbose > 0):
 					print ("Not Active:", id, descr, (now - int(lastSNMP.decode('utf-8'))) )
-				outgoingTraffic = -1	
-				incomingTraffic = -1	
-			else:
-				outgoingTraffic = float(obw.decode('utf-8'))/1000
-				incomingTraffic = float(ibw.decode('utf-8'))/1000
-				
+
+			sampleTime = now - int(lastSNMP.decode('utf-8'))
+
+			outgoingTraffic = float(obw.decode('utf-8'))/1000
+			incomingTraffic = float(ibw.decode('utf-8'))/1000
+
+			# compose all 'fields' e.g.:  trafficData.13.ibw  ->  input bandwidth for device ID 13 (Telega) 
+			# then add pairs 'field, value' to tuples, for batch insert into time database (Graphite)
 			tagName = "trafficData." + ifID.decode('utf-8') + ".ibw"
 			tuples.append((tagName, (now, incomingTraffic)))
 
@@ -71,7 +74,10 @@ def redisToGraphite():
 			tagName = "trafficData." + ifID.decode('utf-8') + ".circom"
 			tuples.append((tagName, (now, float(cirCom.decode('utf-8')))))
 
-			if ((count % 20) == 0):    # we will 'pcak' info for performace 
+			tagName = "trafficData." + ifID.decode('utf-8') + ".sampletime"
+			tuples.append((tagName, (now, float(sampleTime))))
+
+			if ((count % 20) == 0):    # we will 'pack' info for performace 
 	
 				if (_verbose > 3):
 					print(tuples)
@@ -127,6 +133,8 @@ def main():
 #			IPAddress = a
 		else:
 			assert False, "unhandled option"
+
+	print ("Starting....", file=sys.stderr )
 		
 	redisToGraphite()
 	sys.exit()
